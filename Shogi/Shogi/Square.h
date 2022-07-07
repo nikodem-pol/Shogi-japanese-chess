@@ -14,46 +14,17 @@ class Square : public sf::Drawable
 
 public:
 	Square() = default;
-	Square(sf::Vector2f size, sf::Vector2f pos) : highlighted(false)
-	{
-		shape.setPosition(pos);
-		shape.setSize(size);
-		shape.setOrigin(size.x / 2, size.y / 2);
-		shape.setFillColor(sqColor);
-		figure.reset(nullptr);
-	}
-
+	Square(sf::Vector2f size, sf::Vector2f pos);
 	Square(sf::Vector2f size, sf::Vector2f pos, std::unique_ptr<Figure> fig) : Square(size, pos)
 	{
 		figure = std::move(fig);
 	}
-
-	Square(Square&& other) noexcept
-	{
-		shape = std::move(other.shape);
-		sqColor = std::move(other.sqColor);
-		figure = std::move(other.figure);
-		highlighted = std::move(other.highlighted);
-		//std::cout << "Moved\n";
-	}
-
-	void draw(sf::RenderTarget& target, sf::RenderStates state) const override
-	{
-		target.draw(shape, state);
-		if (figure != nullptr)
-		{
-			target.draw(*figure, state);
-		}
-	}
-
-	Square& operator=(Square&& other) noexcept
-	{
-		shape = std::move(other.shape);
-		sqColor = std::move(other.sqColor);
-		figure = std::move(other.figure);
-		highlighted = std::move(other.highlighted);
-		return *this;
-	}
+	Square(Square&& other) noexcept;
+	Square& operator=(Square&& other) noexcept;
+	void draw(sf::RenderTarget& target, sf::RenderStates state) const override;
+	void giveFigure(Square& chosenSq);
+	void takes(Square& chosenSq);
+	std::optional<figureType> getFigureType();
 
 	/*
 	* Zmiana koloru pola
@@ -61,32 +32,6 @@ public:
 	void changeColor(sf::Color color) 
 	{
 		shape.setFillColor(color);
-	}
-
-
-	/*
-	*	Przemieszczanie figury na wolne pole
-	*/
-	void giveFigure(Square& chosenSq) 
-	{
-		//
-		chosenSq.figure = std::move(this->figure);
-		chosenSq.figure->changePos(chosenSq.getPos());
-		//
-	}
-
-	/*
-	*	Bicie figure z pola chosenSq
-	*/
-	void takes(Square& chosenSq)  
-	{
-		std::unique_ptr<Figure> figureToDelete = nullptr;
-		//wymiana figurami
-		figure.swap(chosenSq.figure);
-
-		//Czyszczenie pola
-		figure.swap(figureToDelete);
-
 	}
 
 	void setFigure(std::unique_ptr<Figure>& droppedFigure)
@@ -131,17 +76,6 @@ public:
 			return figure->getTeam();
 		else
 			return team::Empty;
-	}
-
-	std::optional<figureType> getFigureType()
-	{
-		if (figure != nullptr)
-		{
-			std::optional<figureType> typeOfHeldFigure = figure->getFigureType();
-			return typeOfHeldFigure;
-		}
-		else
-			return {};
 	}
 
 	void promoteFigure()

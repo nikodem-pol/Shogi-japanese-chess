@@ -169,3 +169,37 @@ std::optional<sf::Vector2i> Board::findSquare(sf::Vector2i cursorPos)
 	
 	return foundSquareIndex;
 }
+
+std::optional<figureType> Board::moveFigure(sf::Vector2i oldSq, sf::Vector2i newSq)
+{
+	std::optional<figureType> takenFigureType = squares[newSq.x][newSq.y].getFigureType();
+
+	squares[oldSq.x][oldSq.y].giveFigure(squares[newSq.x][newSq.y]);
+
+	if (squares[newSq.x][newSq.y].getFigureType() == figureType::King)
+	{
+		if (squares[newSq.x][newSq.y].getTeam() == team::White)
+			whiteKingPos = { newSq.x, newSq.y };
+		else
+			blackKingPos = { newSq.x, newSq.y };
+	}
+
+	return takenFigureType;
+}
+
+void Board::highligth(std::set<std::pair<int, int>> moves, team figureTeam, bool selector = true)
+{
+	std::ranges::for_each(moves, [this, figureTeam, selector](std::pair<int, int> sq) {
+		team sqTeam = squares[sq.first][sq.second].getTeam();
+		if (selector)
+		{
+			if (sqTeam != figureTeam)
+				squares[sq.first][sq.second].highlight();
+		}
+		else
+		{
+			if (!squares[sq.first][sq.second].isOccupied())
+				squares[sq.first][sq.second].highlight();
+		}
+		});
+}
